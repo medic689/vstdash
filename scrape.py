@@ -166,7 +166,7 @@ def addDataToDB(dataLine):
 
     for line in dataLine:  # for each line of data scraped from emResources,
         if line not in data:  # if the scraped data is not in the database,
-            print("{hospital: >40} {type: >15} not in data".format(hospital = line[0], type = line[1]))
+            print("{hospital: >40} {type: >41} not in data".format(hospital = line[0], type = line[2]))
             sql = "INSERT INTO hospitalData (name, bedsAvailable, bedType, lastUpdated) VALUES (%s, %s, %s, %s)"
             val = (line[0], line[1], line[2], line[3])
             try :
@@ -178,7 +178,7 @@ def addDataToDB(dataLine):
 
 
         else:
-             print("{hospital: >40} {type: >15} already in data".format(hospital = line[0], type = line[1]))
+             print("{hospital: >40} {type: >41} already in data".format(hospital = line[0], type = line[2]))
 
 
 # used to track when the program runs in the log file
