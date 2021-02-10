@@ -130,9 +130,12 @@ def getNedoc(table, hospitalName):
 
 
 def formatDateTime(time):
+    # the data scraped uses a Latin-1 or char(160) space, idk.
     time = time.replace(u'\xa0', u' ').split(" ")
-    if time[0] == "":  # check if the argument is blank to prevent lower errors
+    # check if the argument is blank to prevent lower errors
+    if time[0] == "":
         return " "
+    # used to convert the str formatted months to numericals
     monthDict = {
         "Jan": "01",
         "Feb": "02",
@@ -147,10 +150,14 @@ def formatDateTime(time):
         "Nov": "11",
         "Dec": "12",
     }
+    # match the months together
     month = monthDict.get(time[1])
+    # set the hour:min spot
     hour = time[2]
+    # break apart the hour:min based off the :
     hoursplit = hour.split(":")[0]
     minutesplit = hour.split(":")[1]
+    # concatenate everything back together in the correct date time format
     return str("2021-" + month + "-" + time[0] + " " + hoursplit + ":" + minutesplit + ":00")
 
 # takes in a tuple with the correct ordering
@@ -161,14 +168,16 @@ def addDataToDB(dataLine):
     # mysql string to retrieve all of the previously submitted data
     mycursor.execute("SELECT * FROM hospitalData")
     data = mycursor.fetchall()
-    print("Size of returned db data " + str(sys.getsizeof(data))) #to keep an eye on the size of the data
+    # to keep an eye on the size of the data
+    print("Size of returned db data " + str(sys.getsizeof(data)) + " Bytes")
 
     for line in dataLine:  # for each line of data scraped from emResources,
         if line not in data:  # if the scraped data is not in the database,
-            print("{hospital: >40} {count: >4} - {type: >41} not in data".format(count = line[1], hospital = line[0], type = line[2]))
+            print("{hospital: >40} {count: >4} - {type: >41} not in data".format(
+                count=line[1], hospital=line[0], type=line[2]))
             sql = "INSERT INTO hospitalData (name, bedsAvailable, bedType, lastUpdated) VALUES (%s, %s, %s, %s)"
             val = (line[0], line[1], line[2], line[3])
-            try :
+            try:
                 mycursor.execute(sql, val)
                 mydb.commit()
                 print(mycursor.rowcount, "record inserted.")
@@ -176,9 +185,10 @@ def addDataToDB(dataLine):
                 print("Error inserting new record")
 
         else:
-             print("{hospital: <40} {count: >4} - {type: <41} already in data".format(count = line[1], hospital = line[0], type = line[2]))
+            print("{hospital: <40} {count: >4} - {type: <41} already in data".format(
+                count=line[1], hospital=line[0], type=line[2]))
 
 
-# used to track when the program runs in the log file
+# used to show when the program runs in the log file
 print("\n********* Commencing Scrape on ",  datetime.now(), " ***********")
-fetchData()
+fetchData()  # how we kick things off
