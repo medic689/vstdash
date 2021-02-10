@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from requests import Session
 from lxml import html
 from bs4 import BeautifulSoup
