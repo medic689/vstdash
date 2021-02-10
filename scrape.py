@@ -24,7 +24,6 @@ mydb = mysql.connector.connect(
     password="passwordISpassword",
     database="emdata"
 )
-print(mydb)
 mycursor = mydb.cursor(buffered=True)
 
 # List of EMResource websites to pull data from
@@ -166,7 +165,7 @@ def addDataToDB(dataLine):
 
     for line in dataLine:  # for each line of data scraped from emResources,
         if line not in data:  # if the scraped data is not in the database,
-            print("{hospital: >40} {type: >41} not in data".format(hospital = line[0], type = line[2]))
+            print("{hospital: >40} {count: >4} - {type: >41} not in data".format(count = line[1], hospital = line[0], type = line[2]))
             sql = "INSERT INTO hospitalData (name, bedsAvailable, bedType, lastUpdated) VALUES (%s, %s, %s, %s)"
             val = (line[0], line[1], line[2], line[3])
             try :
@@ -176,12 +175,10 @@ def addDataToDB(dataLine):
             except:
                 print("Error inserting new record")
 
-
         else:
-             print("{hospital: >40} {type: >41} already in data".format(hospital = line[0], type = line[2]))
+             print("{hospital: <40} {count: >4} - {type: <41} already in data".format(count = line[1], hospital = line[0], type = line[2]))
 
 
 # used to track when the program runs in the log file
-print(" ********* Commencing Scrape on ",  datetime.now(), " ***********")
+print("\n********* Commencing Scrape on ",  datetime.now(), " ***********")
 fetchData()
-
