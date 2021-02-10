@@ -15,6 +15,7 @@ payload = {
     "password": "Password2*"
 }
 
+
 mydb = mysql.connector.connect(
     host="arlingtonems.org",
     user="emApp",
