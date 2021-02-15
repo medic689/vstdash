@@ -117,21 +117,21 @@ def getData(table, locations, hospitalName):
         rows = table.find_all("tr")
         cols = rows[bedType.get("row")].find_all("td")
 
-        hospitalName = cols[bedType.get("name")].text
+        bedTypeName = cols[bedType.get("name")].text
         countOfBeds = cols[bedType.get("count")].text
         timeLastUpdated = formatDateTime(cols[bedType.get("time")].text)
 
         if countOfBeds == "--":
             countOfBeds = ""
         dataReturned.extend(
-            [(hospitalName, countOfBeds, hospitalName, timeLastUpdated)])
+            [(hospitalName, countOfBeds, bedTypeName, timeLastUpdated)])
 
 
 def getNedoc(table, hospitalName):
     # Manual data pull for NEDOC
     rows = table.find_all("tr")
     cols = rows[2].find_all("td")
-    hospitalName = cols[1].text
+    name = cols[1].text
     countOfBeds = cols[2].text.split(" ")[0]
     timeLastUpdated = formatDateTime(cols[4].text)
     # missing entries show up as "--". Below swaps that out for a blank string.
@@ -139,7 +139,7 @@ def getNedoc(table, hospitalName):
         countOfBeds = ""
     # add on to list of data to update
     dataReturned.extend(
-        [(hospitalName, countOfBeds, hospitalName, timeLastUpdated)])
+        [(hospitalName, countOfBeds, name, timeLastUpdated)])
 
 # takes in the text string and is combined into a parseable format
 
