@@ -64,6 +64,22 @@ datalocations = [
     }
 ]
 
+# used to convert the str formatted months to numericals
+monthDict = {
+    "Jan": "01",
+    "Feb": "02",
+    "Mar": "03",
+    "Apr": "04",
+    "May": "05",
+    "Jun": "06",
+    "Jul": "07",
+    "Aug": "08",
+    "Sep": "09",
+    "Oct": "10",
+    "Nov": "11",
+    "Dec": "12",
+}
+
 # declaring an empty array to hold returned data
 # no need to reset back to zero as the script closes and runs new each time.
 dataReturned = []
@@ -92,8 +108,7 @@ def fetchData():
 
 
 def getHospitalName(data):
-    hospitalName = data.find('h1', id='r_name')
-    return hospitalName.text
+    return data.find('h1', id='r_name').text
 
 
 def getData(table, locations, hospitalName):
@@ -101,30 +116,30 @@ def getData(table, locations, hospitalName):
     for bedType in locations:
         rows = table.find_all("tr")
         cols = rows[bedType.get("row")].find_all("td")
-        n = cols[bedType.get("name")].text
-        c = cols[bedType.get("count")].text
-        t = cols[bedType.get("time")].text
-        t = formatDateTime(t)
 
-        if c == "--":
-            c = ""
-        newEntry = [(hospitalName, c, n, t)]
-        dataReturned.extend(newEntry)
+        hospitalName = cols[bedType.get("name")].text
+        countOfBeds = cols[bedType.get("count")].text
+        timeLastUpdated = formatDateTime(cols[bedType.get("time")].text)
+
+        if countOfBeds == "--":
+            countOfBeds = ""
+        dataReturned.extend(
+            [(hospitalName, countOfBeds, hospitalName, timeLastUpdated)])
 
 
 def getNedoc(table, hospitalName):
     # Manual data pull for NEDOC
     rows = table.find_all("tr")
     cols = rows[2].find_all("td")
-    n = cols[1].text
-    c = cols[2].text.split(" ")[0]
-    t = cols[4].text
-    t = formatDateTime(t)
+    hospitalName = cols[1].text
+    countOfBeds = cols[2].text.split(" ")[0]
+    timeLastUpdated = formatDateTime(cols[4].text)
     # missing entries show up as "--". Below swaps that out for a blank string.
-    if c == "--":
-        c = ""
-    newEntry = [(hospitalName, c, n, t)]  # package into tuple for insertion
-    dataReturned.extend(newEntry)  # add on to list of data to update
+    if countOfBeds == "--":
+        countOfBeds = ""
+    # add on to list of data to update
+    dataReturned.extend(
+        [(hospitalName, countOfBeds, hospitalName, timeLastUpdated)])
 
 # takes in the text string and is combined into a parseable format
 
@@ -135,30 +150,13 @@ def formatDateTime(time):
     # check if the argument is blank to prevent lower errors
     if time[0] == "":
         return " "
-    # used to convert the str formatted months to numericals
-    monthDict = {
-        "Jan": "01",
-        "Feb": "02",
-        "Mar": "03",
-        "Apr": "04",
-        "May": "05",
-        "Jun": "06",
-        "Jul": "07",
-        "Aug": "08",
-        "Sep": "09",
-        "Oct": "10",
-        "Nov": "11",
-        "Dec": "12",
-    }
-    # match the months together
-    month = monthDict.get(time[1])
     # set the hour:min spot
     hour = time[2]
     # break apart the hour:min based off the :
     hoursplit = hour.split(":")[0]
     minutesplit = hour.split(":")[1]
     # concatenate everything back together in the correct date time format
-    return str("2021-" + month + "-" + time[0] + " " + hoursplit + ":" + minutesplit + ":00")
+    return str("2021-" + monthDict.get(time[1]) + "-" + time[0] + " " + hoursplit + ":" + minutesplit + ":00")
 
 # takes in a tuple with the correct ordering
 
@@ -173,7 +171,7 @@ def addDataToDB(dataLine):
 
     for line in dataLine:  # for each line of data scraped from emResources,
         if line not in data:  # if the scraped data is not in the database,
-            print("{hospital: >40} {count: >4} - {type: >41} not in data".format(
+            print("{hospital: <40} {count: >4} - {type: >41} not in data".format(
                 count=line[1], hospital=line[0], type=line[2]))
             sql = "INSERT INTO hospitalData (name, bedsAvailable, bedType, lastUpdated) VALUES (%s, %s, %s, %s)"
             val = (line[0], line[1], line[2], line[3])
